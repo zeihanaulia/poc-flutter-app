@@ -1,0 +1,12 @@
+{
+    "12345": {
+        "avatar": "avatar url",
+        "messages": {
+            "type": "string",
+            "content": "hey yo, what's up?",
+            "from": "friend",
+            "timestamp": 12313212321
+        },
+        "display_name": "Zeihan"
+    }
+}

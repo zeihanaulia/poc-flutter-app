@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_app/ChatMessages.dart';
 
@@ -28,6 +30,8 @@ class _ChatViewState extends State<ChatView> {
 
   @override
   Widget build(BuildContext context) {
+    loadMessageDetails();
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.friendName),
@@ -35,19 +39,31 @@ class _ChatViewState extends State<ChatView> {
       body: Column(
         children: <Widget>[
           Flexible(
-            child: ListView(
-              children: <Widget>[
-                ChatMessages(
-                  isFriend: true,
-                  isNotPrevious: true,
-                  friendInitial: _friendInitial,
-                ),
-                // ChatMessages(
-                //   isFriend: false,
-                //   isNotPrevious: true,
-                //   friendInitial: _friendInitial,
-                // ),
-              ],
+            child: FutureBuilder(
+              future: loadMessageDetails(),
+              builder: (BuildContext context, AsyncSnapshot snapshot) {
+                print('$snapshot');
+                if (snapshot.connectionState == ConnectionState.done) {
+                  if (snapshot.hasData) {
+                    List<ChatMessages> chatMessagesWidgets = List();
+                    List<dynamic> chatMessageList = snapshot.data;
+                    chatMessageList.forEach((_message) {
+                      print('$_message');
+                      chatMessagesWidgets.add(ChatMessages(
+                        friendInitial: "T",
+                        isFriend: true,
+                        isNotPrevious: true,
+                        message: _message['content'],
+                      ));
+                    });
+                    return ListView(children: chatMessagesWidgets);
+                  } else {
+                    return Center(child: Text('No message not found'));
+                  }
+                } else {
+                  return CircularProgressIndicator();
+                }
+              },
             ),
           ),
           Padding(
@@ -86,5 +102,28 @@ class _ChatViewState extends State<ChatView> {
         ],
       ),
     );
+  }
+
+  Future<List> loadMessageDetails() async {
+    String messageDetailsString = await DefaultAssetBundle.of(context)
+        .loadString("assets/messageDetails.json");
+    Map<String, dynamic> mappedMessage = json.decode(messageDetailsString);
+    List<dynamic> messages = mappedMessage['12345']['messages'];
+    return messages;
+  }
+
+  List<Widget> getMessages() {
+    List<Widget> tempList = List();
+
+    loadMessageDetails().then((_value) {
+      if (_value != null) {
+        tempList.add(Text('no message'));
+        print('$_value');
+      } else {
+        tempList.add(Text('no message'));
+      }
+    });
+
+    return tempList;
   }
 }
